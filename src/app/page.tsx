@@ -1,101 +1,72 @@
-import Image from "next/image";
+"use client"
+
+import TodosMap from "@/components/TodosMap";
+import { FormEvent, useEffect, useState } from "react";
+
+export type Todo = { id: number, titel: string, isDone: boolean }
+type LocalStorageTodo = Todo[] | null
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const todosInLocaleStorage = localStorage.getItem("todosList");
+  const todosJson: LocalStorageTodo = todosInLocaleStorage ? JSON.parse(todosInLocaleStorage) : null;
+  const [todoName, setTodoName] = useState<string>("")
+  const [todos, setTodos] = useState<null | Todo[]>(todosJson);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const handleAddTodo = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const timestamp = Date.now()
+    const currentTodos = todos ? [...todos] : null
+    if (!currentTodos) {
+      return setTodos([{ id: timestamp, titel: todoName, isDone: false }])
+    }
+
+    currentTodos.push({ id: timestamp, titel: todoName, isDone: false })
+    return setTodos(currentTodos)
+  }
+
+  const handleRemoveTodo = (id: number) => {
+    const currentTodos = todos ? [...todos] : null;
+    if (!currentTodos) return;
+
+    const updatedTodos = currentTodos.filter((todo) => todo.id !== id);
+    setTodos(updatedTodos);
+  };
+
+
+  const handleChangeChecked = (c: boolean, id: number) => {
+    const currentTodos = todos ? [...todos] : null
+    if (!currentTodos) return;
+    const currentTodo = currentTodos.find((todo) => todo.id === id)
+    if (!currentTodo) return;
+    currentTodo.isDone = c
+    setTodos(currentTodos)
+  }
+
+  useEffect(() => {
+    localStorage.setItem("todosList", JSON.stringify(todos));
+  }, [todos]);
+
+  return (
+    <main className="w-[400px] mx-auto flex flex-col justify-center items-center pt-24">
+      <h1 className="text-4xl">Todo Lista</h1>
+      <form onSubmit={handleAddTodo} className="flex w-full mt-2 gap-2">
+        <input
+          onChange={(e) => { setTodoName(e.target.value) }}
+          value={todoName}
+          className="w-full bg-white outline-none text-md text-black px-2 py-1 rounded"
+          placeholder="Lägg till något som du behöver göra"
+        />
+        <button
+          disabled={!todoName}
+          type="submit"
+          className="bg-white text-black rounded min-w-24 disabled:opacity-50">Lägg till</button>
+      </form>
+      {todos && todos.length > 0 ? (
+        <TodosMap changeChecked={handleChangeChecked} todos={todos} removeTodo={handleRemoveTodo} />
+      )
+        :
+        <span className="mt-10">Du har inga todos, lägg gärna till några!</span>
+      }
+    </main>
   );
 }
