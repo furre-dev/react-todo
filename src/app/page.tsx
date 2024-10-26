@@ -1,5 +1,6 @@
 "use client"
 
+import FormWithInput from "@/components/FormWithInput";
 import TodosMap from "@/components/TodosMap";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -49,18 +50,7 @@ export default function Home() {
   return (
     <main className="w-[400px] mx-auto flex flex-col justify-center items-center pt-24">
       <h1 className="text-4xl">Todo Lista</h1>
-      <form onSubmit={handleAddTodo} className="flex w-full mt-2 gap-2">
-        <input
-          onChange={(e) => { setTodoName(e.target.value) }}
-          value={todoName}
-          className="w-full bg-white outline-none text-md text-black px-2 py-1 rounded"
-          placeholder="Lägg till något som du behöver göra"
-        />
-        <button
-          disabled={!todoName}
-          type="submit"
-          className="bg-white text-black rounded min-w-24 disabled:opacity-50">Lägg till</button>
-      </form>
+      <FormWithInput onSubmit={handleAddTodo} setTodoName={setTodoName} todoName={todoName} />
       {todos && todos.length > 0 ? (
         <TodosMap changeChecked={handleChangeChecked} todos={todos} removeTodo={handleRemoveTodo} />
       )
